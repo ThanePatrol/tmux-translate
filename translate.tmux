@@ -1,21 +1,15 @@
 #!/usr/bin/env bash
 
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-tmux bind-key T run-shell "$CURRENT_DIR/core/list.sh"
+source "$CURRENT_DIR/core/main.sh"
 
-get_tmux_option() {
-	local option value default
-	option="$1"
-	default="$2"
-	value=$(tmux show-option -gqv "$option")
+set_key_bindings() {
+	key="$(get_tmux_option "$translate_key" "$default_translate_key")"
+	tmux bind-key -T copy-mode "$key" send-keys -X copy-pipe-and-cancel "$CURRENT_DIR/core/main.sh"
+	tmux bind-key -T copy-mode-vi "$key" send-keys -X copy-pipe-and-cancel  "$CURRENT_DIR/core/main.sh"
 
-	if [ -n "$value" ]; then
-		if [ "$value" = "null" ]; then
-			echo ""
-		else 
-			echo "$value"
-		fi
-	else
-		echo "$default"
-	fi
+	#tmux bind-key "$key" run-shell "$CURRENT_DIR/core/main.sh"
 }
+
+set_key_bindings
+
