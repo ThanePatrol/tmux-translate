@@ -1,77 +1,46 @@
-use clap::{Parser, ValueEnum};
-use serde::{Deserialize, Serialize};
+use std::process::exit;
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
-struct TranslationRequest {
-    from: String,
-    to: String,
-    text: String,
-}
+use clap::Parser;
+use cli::create_translation_request_from_args_and_config;
+use cli::Args;
+use config::load_config_file_or_default;
+use translate::translate_text;
+use translate::TranslationEngine;
 
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-struct Args {
-    /// translation method
-    #[arg(short, long, default_value_t = TranslationEngine::Google)]
-    name: TranslationEngine,
-
-    /// Number of times to greet
-    #[arg(short, long, default_value_t = String::new())]
-    api_key: String,
-}
-
-#[derive(Debug, Clone, ValueEnum)]
-enum TranslationEngine {
-    Google,
-    NLP,
-    Feishu,
-}
-
-impl ToString for TranslationEngine {
-    fn to_string(&self) -> String {
-        match self {
-            TranslationEngine::Google => "google",
-            TranslationEngine::NLP => "nlp",
-            TranslationEngine::Feishu => "feishu",
-        }
-        .to_string()
-    }
-}
+mod cli;
+mod config;
+mod translate;
 
 fn main() {
     let args = Args::parse();
-    let t = TranslationRequest {
-        text: String::from("hello how are you?"),
-        from: String::from("en"),
-        to: String::from("zh-cn"),
+
+    let config_result = load_config_file_or_default("HOME".into());
+
+    let config = match config_result {
+        Ok(conf) => conf,
+        Err(err) => {
+            println!("couldn't load config file! error is {err}");
+            exit(1);
+        }
     };
 
-    println!("{:?}", args);
+    let translation_request_result = create_translation_request_from_args_and_config(args, &config);
 
-    let translated = translate_text_with_google(t, args.api_key);
-    println!("{}", translated);
-}
-
-// TODO good timeout values
-fn translate_text_with_google(req: TranslationRequest, api_key: String) -> String {
-    let req_json = serde_json::to_string(&req).unwrap();
-    let client = reqwest::blocking::Client::new();
-    let rsp = client
-        .post("https://google-translate113.p.rapidapi.com/api/v1/translator/text")
-        .header("Content-Type", "application/json")
-        .header("x-rapidapi-host", "google-translate113.p.rapidapi.com")
-        .header("x-rapidapi-key", api_key)
-        .body(req_json)
-        .send();
-
-    if let Ok(success_response) = rsp {
-        let body = success_response.text();
-        if let Ok(success_body) = body {
-            success_body
-        } else {
-            body.unwrap_err().to_string()
+    let translation_request = match translation_request_result {
+        Ok(req) => req,
+        Err(err) => {
+            println!("couldn't build translation request. error is {err}");
+            exit(1);
         }
-    } else {
-        rsp.unwrap_err().to_string()
-    }
+    };
+
+    let translated_result = translate_text(translation_request);
+    let translated = match translated_result {
+        Ok(trans) => trans,
+        Err(err) => {
+            println!("couldn't make call to api. error is {err}");
+            exit(1);
+        }
+    };
+    println!("{}", translated);
 }
