@@ -7,7 +7,7 @@ main="$CURRENT_DIR/translate/main.sh"
 source "$main"
 
 set_key_bindings() {
-	key="$(get_tmux_option "$translate_key" "$default_translate_key")"
+	key="$(get_tmux_option "$translate_key_option" "$default_translate_key")"
 	tmux bind-key -T copy-mode "$key" send-keys -X copy-pipe-and-cancel "$main"
 	tmux bind-key -T copy-mode-vi "$key" send-keys -X copy-pipe-and-cancel  "$main"
 }
