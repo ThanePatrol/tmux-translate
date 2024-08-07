@@ -21,7 +21,7 @@ impl AppConfig {
     }
 }
 
-// Only support .config/translate/translate.toml atm
+// Only support ~/.config/translate/translate.toml atm
 pub fn load_config_file_or_default(home_env_var: String) -> Result<AppConfig> {
     let home_dir = std::env::var(home_env_var).expect("HOME environment variable not set");
 
@@ -33,14 +33,6 @@ pub fn load_config_file_or_default(home_env_var: String) -> Result<AppConfig> {
             return Ok(app_config);
         }
     }
-
-    // No config file exists
-    //println!(
-    //"Could not find config files at these locations: {:?}",
-    //file_paths
-    //);
-
-    //println!("Creating a new config file at {home_dir}/.config/translate/translate.toml");
 
     let default_config = AppConfig::default();
     let cfg_string = toml::to_string_pretty(&default_config)?;

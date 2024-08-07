@@ -14,6 +14,7 @@ mod translate;
 fn main() {
     let args = Args::parse();
 
+    // Rely on HOME env var on POSIX systems
     let config_result = load_config_file_or_default("HOME".into());
 
     let config = match config_result {

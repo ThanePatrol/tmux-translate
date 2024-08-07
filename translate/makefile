@@ -1,9 +1,9 @@
+.PHONY: help run-google test install integration-test
 ifneq (,$(wildcard ./.env))
     include .env
     export
 endif
 
-.PHONY: run-google, help, test
 
 
 help: ## Display this screen
@@ -18,7 +18,12 @@ run-google: ## Uses google translate api
 test: ## Runs unit tests sequentially
 	cargo test -- --test-threads 1
 
-install:
+install: ## Compiles then installs to local binary path
 	cargo build --release
 	cp ./target/release/translate ~/.local/bin
+
+integration-test: ## Compiles locally then copies across to docker container to run tests
+	cargo test --test '*'
+
+	
 
