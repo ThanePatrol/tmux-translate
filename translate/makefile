@@ -4,8 +4,6 @@ ifneq (,$(wildcard ./.env))
     export
 endif
 
-
-
 help: ## Display this screen
 	@echo "Usage: make [target]"
 	@echo "Targets:"
@@ -24,6 +22,4 @@ install: ## Compiles then installs to local binary path
 
 integration-test: ## Compiles locally then copies across to docker container to run tests
 	cargo test --test '*'
-
-	
 

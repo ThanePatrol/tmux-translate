@@ -34,13 +34,13 @@ translate_selection() {
 	dst_lang="$(get_tmux_option $dst_lang_option $default_dst_lang)"
 	engine="$(get_tmux_option $engine_option $default_engine)"
 
-    to_translate="$(tmux show-buffer)"
-    
-    translated_json="$(translate --from "$src_lang" --engine "$engine" --to "$dst_lang" --text "$to_translate")"
-    
+	to_translate="$(tmux show-buffer)"
+
+	translated_json="$(translate --from "$src_lang" --engine "$engine" --to "$dst_lang" --text "$to_translate")"
+
 	translated_text="$(format_output "$translated_json")"
-    
-	tmux display-popup -w "$width" -h "$height" "echo 'Translated text: \n $translated_text'" 
+
+	tmux display-popup -w "$width" -h "$height" "echo 'Translated text: \n $translated_text'"
 }
 
 format_output() {
